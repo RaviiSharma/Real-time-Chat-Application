@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Real-time Chat Application</title>
+  <style>
+    #messageBox {
+      height: 300px;
+      overflow-y: scroll;
+    }
+  </style>
+</head>
+<body>
+  <h1>Real-time Chat Application</h1>
+
+  <h2>Register</h2>
+  <form id="registerForm">
+    <input type="text" id="usernameInput" placeholder="Username" required>
+    <input type="password" id="passwordInput" placeholder="Password" required>
+    <button type="submit">Register</button>
+  </form>
+
+  <h2>Join Chat Room</h2>
+  <form id="joinRoomForm">
+    <input type="text" id="roomInput" placeholder="Room name" required>
+    <button type="submit">Join Room</button>
+  </form>
+
+  <h2>Chat Room</h2>
+  <div id="messageBox"></div>
+
+  <form id="sendMessageForm">
+    <input type="text" id="messageInput" placeholder="Type your message" required>
+    <button type="submit">Send</button>
+  </form>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    const registerForm = document.getElementById('registerForm');
+    const joinRoomForm = document.getElementById('joinRoomForm');
+    const sendMessageForm = document.getElementById('sendMessageForm');
+    const messageBox = document.getElementById('messageBox');
+
+    // Register form submission
+    registerForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('usernameInput').value;
+      const password = document.getElementById('passwordInput').value;
+      socket.emit('register', { username, password });
+    });
+
+    // Registration success
+    socket.on('registrationSuccess', () => {
+      alert('Registration successful!');
+    });
+
+    // Registration error
+    socket.on('registrationError', (data) => {
+      alert(data.message);
+    });
+
+    // Join room form submission
+    joinRoomForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const room = document.getElementById('roomInput').value;
+      socket.emit('joinRoom', room);
+    });
+
+    // Chat message form submission
+    sendMessageForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const message = document.getElementById('messageInput').value;
+      const room = document.getElementById('roomInput').value;
+      socket.emit('chatMessage', { room, message });
+      document.getElementById('messageInput').value = '';
+    });
+
+    // Receive and display messages
+    socket.on('messageReceived', (message) => {
+      const p = document.createElement('p');
+      p.innerText = message;
+      messageBox.appendChild(p);
+    });
+  </script>
+</body>
+</html>
